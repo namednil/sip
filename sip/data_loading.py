@@ -93,8 +93,8 @@ def batch_fsts(fst_reps: List[np.array], num_states, max_len=None) -> np.array:
     return batched_fst_reps
 
 
-def load_fst_jsonl(path: str, tokenizer: AutoTokenizer, fst_tokenizer: Union[PreTrainedTokenizerFast, str], batch_size:int, num_states: int, random_order: bool = True,
-                   max_len: int = None):
+def load_fst_jsonl(path: str, tokenizer: AutoTokenizer, fst_tokenizer: Union[str, PreTrainedTokenizerFast], batch_size:int, num_states: int, random_order: bool = True,
+                   max_len: int = None, max_n:int=None, map_f = None, filter_f = None):
     if isinstance(fst_tokenizer, str):
         fst_tokenizer = PreTrainedTokenizerFast.from_pretrained(fst_tokenizer)
 
@@ -104,17 +104,26 @@ def load_fst_jsonl(path: str, tokenizer: AutoTokenizer, fst_tokenizer: Union[Pre
             d["labels"] = tokenizer(text_target=examples["output"])["input_ids"]
         return d
 
+    if map_f is None:
+        map_f = lambda x: x
+
     data = {"input": [], "output": [], "fst_rep": [], "task_ids": []}
     with open(path) as f:
+        i = 0
         for line in f:
             d = json.loads(line)
-            data["input"].append(d["input"])
-            data["output"].append(d["output"])
+            if filter_f is None or filter_f(d):
+                data["input"].append(d["input"])
+                data["output"].append(d["output"])
 
-            if "task_id" in d:
-                data["task_ids"].append(d["task_id"])
+                if "task_id" in d:
+                    data["task_ids"].append(d["task_id"])
 
-            data["fst_rep"].append(fst_to_vector(fst_tokenizer, num_states, d["FST"]))
+                data["fst_rep"].append(fst_to_vector(fst_tokenizer, num_states, map_f(d["FST"])))
+
+                i += 1
+                if max_n is not None and i > max_n:
+                    break
 
     if len(data["task_ids"]) == 0:
         del data["task_ids"]
