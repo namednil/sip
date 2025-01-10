@@ -36,7 +36,7 @@ def get_optimizer(model, optimizer, optimizer_groups):
                     param.requires_grad_(False)
             else:
                 new_groups.append(d)
-        optimizer = optimizer.run(params=groups)
+        optimizer = optimizer.run(params=new_groups)
     else:
         optimizer = optimizer.run(params=model.parameters())
 
