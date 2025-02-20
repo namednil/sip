@@ -129,14 +129,14 @@ class FSTPretrainingModel(torch.nn.Module):
         torch.save(self.machine_embedder, os.path.join(path, "machine_embedder_params.pt"))
 
     @staticmethod
-    def from_pretrained(path):
+    def from_pretrained(path, weights_only:bool = False):
         class Dummy:
             def run(self, *args, **kwargs):
                 return None
 
         revived_pretrained_model = FSTPretrainingModel(transformers.AutoModelForSeq2SeqLM.from_pretrained(path),
                                                        Dummy())
-        revived_pretrained_model.machine_embedder = torch.load(os.path.join(path, "machine_embedder_params.pt"))
+        revived_pretrained_model.machine_embedder = torch.load(os.path.join(path, "machine_embedder_params.pt"), weights_only=weights_only)
 
         return revived_pretrained_model
 

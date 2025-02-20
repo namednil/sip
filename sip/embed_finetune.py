@@ -27,7 +27,8 @@ def load_struct_prefix_with_init(model_str: str,
                                    *args, **kwargs):
     import sip.fst_pretrain
     from sip.data_loading import load_fst_jsonl
-    machine_embedder = torch.load(os.path.join(model_str, "machine_embedder_params.pt"), map_location=map_location)
+    machine_embedder = torch.load(os.path.join(model_str, "machine_embedder_params.pt"), map_location=map_location,
+                                  weights_only=False)
 
     num_states = machine_embedder.state_embeddings.num_embeddings
 

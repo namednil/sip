@@ -1,5 +1,8 @@
 Levenshtein==0.20.9
 rjsonnet==0.5.2
-tqdm==4.65.0
+tqdm>=4.65.0
 transformers==4.38.1
+datasets==2.9.0
 
+# Optional:
+# neptune==1.13.0
