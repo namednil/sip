@@ -6,7 +6,7 @@ local tokenizer =   {
 local task_train_loader = {
         "f": "prepare_task_dataset",
 
-        "batch_size": 32,
+        "batch_size": 48,
         "path": std.extVar("train"),
         "tokenizer": tokenizer
 };
@@ -30,7 +30,7 @@ local task_val_loader = {
      "from sip.embed_finetune import *", "from sip.task_finetune import *"],
   "logger": {
     f: "NeptuneLogger.create",
-    "project": "<NAME>-team/prior-dist-synthetic"
+    "project": "<NAME>/<PROJECT>"
   },
   "steps": [
 
@@ -38,24 +38,16 @@ local task_val_loader = {
     "name": "finetune",
     "f": "finetune_model",
 
-    "model": {
-        f: "create_struct_prefix",
-        "prefix_length": 50,
-        "model_str":  "models/w_fsts_pretrain_s4_32_task_embedding_longer2",
-    },
+      model: {f: "transformers.AutoModelForSeq2SeqLM.from_pretrained",
+                pretrained_model_name_or_path: std.extVar("load_model")
+             },
 
     "tokenizer": tokenizer,
 
     "train_data_loader": task_train_loader,
     "validation_data_loader": task_val_loader,
-    "optimizer": {"[lazy]": "torch.optim.Adam", "lr": 5e-4 },
+    "optimizer": {"[lazy]": "torch.optim.Adam", "lr": 5e-4},
     "num_epochs": 50,
-
-    
-    "optimizer_groups": [
-        [".*prefix_embedding.*", {"lr": 1.0}],
-        [".*", {"lr": 5e-4}]
-    ],
 
     "logger": "[logger]",
     

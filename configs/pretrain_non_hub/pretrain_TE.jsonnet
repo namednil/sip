@@ -1,6 +1,6 @@
 local num_states = 15;
 
-local fst_tokenizer_path = "namednil/sip-fst-tokenizer";
+local fst_tokenizer_path = "unicode_char_tokenizer_ipa.json";
 
 local train_data_path = "data/pretrain/train_pretrain_s4.jsonl";
 local dev_data_path = "data/pretrain/dev_pretrain_s4.jsonl";
@@ -18,16 +18,16 @@ local data_loader(fname, batch_size) = {
         "batch_size": batch_size,
         "path": fname,
         "tokenizer": tokenizer,
-        "fst_tokenizer_path": fst_tokenizer_path,
-        "num_states": num_states
+        "fst_tokenizer": fst_tokenizer_path,
+        "num_states": num_states,
 
 } ;
 
 
 {
-  "imports": ["import transformers", "from meta_adapters.metalearner import *",
-   "from meta_adapters.data_loading import *", "from meta_adapters.pretraining import *", "from meta_adapters.embed_finetune import *",
-    "from meta_adapters.fst_pretrain import *"],
+  "imports": ["import transformers",
+   "from sip.data_loading import *", "from sip.pretraining import *", "from sip.embed_finetune import *",
+    "from sip.fst_pretrain import *"],
   "logger": {
     f: "NeptuneLogger.create",
     "project": "<NAME>/<PROJECT>"
@@ -38,16 +38,15 @@ local data_loader(fname, batch_size) = {
     "name": "pretrain",
     "f": "pretrain",
     "model": {
-        "f": "create_fst_pretraining_model",
-
-        "machine_embedder": {
-                "[lazy]": "create_simple_fst_embedder",
-                "num_states": num_states,
-                "fst_tokenizer_path": fst_tokenizer_path,
-                "state_embedding_dim": 64,
-                "token_embedding_dim": 256,
-                "final_state_embedding_dim": 16
-        },
+        "f": "create_task_embedding_model",
+        
+        "num_tasks": 40001,
+        "prefix_length": 50,
+        "ensure_task_id": true,
+        
+        "internal_embedding_dim": 180,
+        
+        "parallel": true,
 
         "model": {
             f: "transformers.AutoModelForSeq2SeqLM.from_pretrained",
@@ -55,22 +54,30 @@ local data_loader(fname, batch_size) = {
             },
     },
 
+
     "tokenizer": tokenizer,
 
     "train_data_loader": data_loader(train_data_path, 10),
-    "easy_validation_data_loader": data_loader(easy_dev_data_path, 32),
-    "validation_data_loader": data_loader(dev_data_path, 32),
+    "easy_validation_data_loader": data_loader(easy_dev_data_path, 24),
+    "validation_data_loader": null,
 
-    "test_data_loader": data_loader(test_data_path, 32),
+    "test_data_loader": null,
 
-    "optimizer": {"[lazy]": "torch.optim.Adam", "lr": 5e-4},
+    "optimizer_groups": [
+            ["^embedding.*", {"lr": 1.0}], # give task embeddings a high learning rate to adapt quickly to a task
+            [".*", {"lr": 5e-4}]
+    ],
+
     "num_epochs": 20, #TODO
 
     "logger": "[logger]",
 
     "num_accumulation_steps": 3,
 
-    "save_dir": "models/w_fsts_pretrain_s4_32",
+    "save_dir": "models/w_fsts_pretrain_s4_32_task_embedding_longer2",
+    
+    "device": null,
+    
 
     "train_data_path": train_data_path
 

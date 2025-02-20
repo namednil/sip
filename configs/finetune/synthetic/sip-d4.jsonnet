@@ -39,8 +39,8 @@ local task_val_loader = {
     "f": "finetune_model",
 
     "model": {
-        f: "SIPFinetuningModel",
-        "from_pretrained": "namednil/sip-d4"
+        f: "SIPFinetuningModel.from_pretrained",
+        "pretrained_model_name_or_path": "namednil/sip-d4"
     },
 
     "tokenizer": tokenizer,

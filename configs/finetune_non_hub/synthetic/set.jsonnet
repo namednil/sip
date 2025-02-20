@@ -3,6 +3,22 @@ local tokenizer =   {
             pretrained_model_name_or_path: "google/byt5-small"
         };
 
+local task_train_loader = {
+        "f": "prepare_task_dataset",
+
+        "batch_size": 48,
+        "path": std.extVar("train"),
+        "tokenizer": tokenizer
+};
+
+local task_val_loader = {
+        "f": "prepare_task_dataset",
+
+        "batch_size": 64,
+        "path":	std.extVar("test"),
+        "tokenizer": tokenizer
+};
+
 
 {
   "random_seed": std.parseJson(std.extVar("seed")),
@@ -14,7 +30,7 @@ local tokenizer =   {
      "from sip.embed_finetune import *", "from sip.task_finetune import *"],
   "logger": {
     f: "NeptuneLogger.create",
-    "project": "namednil-team/testing-official-sip"
+    "project": "<NAME>/<PROJECT>"
   },
   "steps": [
 
@@ -22,40 +38,20 @@ local tokenizer =   {
     "name": "finetune",
     "f": "finetune_model",
 
-    "model": {
-        f: "create_struct_prefix",
-        "prefix_length": 50,
-        "model_str":  "models/w_fsts_pretrain_s4_32_task_embedding_longer2",
-    },
+      model: {f: "transformers.AutoModelForSeq2SeqLM.from_pretrained",
+                pretrained_model_name_or_path: std.extVar("load_model")
+             },
 
     "tokenizer": tokenizer,
 
-    "train_data_loader": null,
-    "validation_data_loader": null,
-    
-    "dataset_splitter": {
-       "f": "RandomSplit",
-       "path": std.extVar("path"),
-       "tokenizer": tokenizer,
-       "num_train": std.parseJson(std.extVar("num_train")),
-       "train_batch_size": 16
-    },
-    
+    "train_data_loader": task_train_loader,
+    "validation_data_loader": task_val_loader,
     "optimizer": {"[lazy]": "torch.optim.Adam", "lr": 5e-4},
-    "num_epochs": 150,
+    "num_epochs": 50,
 
-    "optimizer_groups": [
-        [".*prefix_embedding.*", {"lr": 1.0}],
-        [".*", {"lr": 5e-4}]
-    ],
-
-    
     "logger": "[logger]",
     
     "grad_scale": 1.0,
-    
-    "num_accumulation_steps": 1,
-    "eval_only_last_epochs": true
   
    }
    

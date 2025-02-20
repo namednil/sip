@@ -1,11 +1,11 @@
 local num_states = 15;
 
-local fst_tokenizer_path = "namednil/sip-fst-tokenizer";
+local fst_tokenizer_path = "unicode_char_tokenizer_ipa.json";
 
-local train_data_path = "data/pretrain/train_pretrain_bimachines_s7.jsonl";
-local dev_data_path = "data/pretrain/dev_pretrain_bimachines_s7.jsonl";
-local easy_dev_data_path = "data/pretrain/easy_dev_pretrain_bimachines_s7.jsonl";
-local test_data_path = "data/pretrain/test_pretrain_bimachines_s7.jsonl";
+local train_data_path = "data/pretrain/s4_more/train_pretrain_s4_more.jsonl";
+local dev_data_path = "data/pretrain/s4_more/dev_pretrain_s4_more.jsonl";
+local easy_dev_data_path = "data/pretrain/s4_more/easy_dev_pretrain_s4_more.jsonl";
+local test_data_path = "data/pretrain/s4_more/test_pretrain_s4_more.jsonl";
 
 
 local tokenizer =   {
@@ -18,16 +18,16 @@ local data_loader(fname, batch_size) = {
         "batch_size": batch_size,
         "path": fname,
         "tokenizer": tokenizer,
-        "fst_tokenizer_path": fst_tokenizer_path,
-        "num_states": num_states
+        "fst_tokenizer": fst_tokenizer_path,
+        "num_states": num_states,
 
 } ;
 
 
 {
-  "imports": ["import transformers", "from meta_adapters.metalearner import *",
-   "from meta_adapters.data_loading import *", "from meta_adapters.pretraining import *", "from meta_adapters.embed_finetune import *",
-    "from meta_adapters.fst_pretrain import *"],
+  "imports": ["import transformers",
+   "from sip.data_loading import *", "from sip.pretraining import *", "from sip.embed_finetune import *",
+    "from sip.fst_pretrain import *"],
   "logger": {
     f: "NeptuneLogger.create",
     "project": "<NAME>/<PROJECT>"
@@ -38,8 +38,8 @@ local data_loader(fname, batch_size) = {
     "name": "pretrain",
     "f": "pretrain",
     "model": {
-        "f": "SIPPreTrainingModel.from_pretrained",
-        "path": "namednil/sip-d4-pt"
+        "f": "FSTPretrainingModel.from_pretrained",
+        "path": "models/YOUR_MODEL"
     },
 
     "tokenizer": tokenizer,
@@ -57,7 +57,7 @@ local data_loader(fname, batch_size) = {
 
     "num_accumulation_steps": 3,
 
-    "save_dir": "models/w_fsts_pretrain_s4_then_bimachines",
+    "save_dir": "models/YOUR_MODEL_s4_more",
 
     "train_data_path": train_data_path
 

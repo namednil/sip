@@ -31,7 +31,7 @@ If you want to reproduce our experiments, this will require a full installation.
 conda create -n sip python=3.10
 conda activate sip
 conda install -c conda-forge pynini # FST library
-# install pytorch (we used v 2.2.1 but newer versions should work fine as well)
+# install pytorch (we used v 2.2.1 but newer versions such as 2.6.0 should work fine as well)
 #e.g. via
 conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
 
@@ -39,6 +39,7 @@ conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvi
 git clone https://github.com/namednil/sip
 
 # Install remaining pip requirements
+# (potentially uncomment neptune.ai dependency if desired)
 cd sip
 pip install -r requirements.txt
 ```
@@ -65,6 +66,14 @@ export test="data/eval/task_s4_0_length_test.tsv"
 python config_evaluator.py configs/finetune/synthetic/sip-d4.jsonnet
 ```
 
+Or on a few-shot text editing task:
+```shell
+export seed=1234
+export num_train=5
+export path="data/pbe_strings_track_tsv/name-combine-4-long.sl.tsv" 
+python config_evaluator.py configs/finetune/text_editing/sip-d4.jsonnet
+```
+
 ## Reproduction of pre-training
 
 To generate the pre-training data, go to the main directory and call
@@ -79,9 +88,12 @@ The easy_dev files contain instances with FSTs seen during training but unseen s
 
 To pre-train the model, run:
 ```
-python config_evaluator.py configs/pretrain_SIP_d4.jsonnet
+python config_evaluator.py configs/pretrain_non_hub/pretrain_SIP_d4.jsonnet
 ```
 
+To fine-tune a model that was pre-trained from a configuration in `configs/pretrain_non_hub/`, you will need to use one of the configs
+in `configs/finetune_non_hub/`.
+Unfortunately, the models produced in this way are currently not easy to upload to the HuggingFace hub, and we're hoping to provide a conversion script soon.
 
 # Citation
 ```

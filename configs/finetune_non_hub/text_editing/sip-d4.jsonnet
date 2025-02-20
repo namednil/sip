@@ -13,9 +13,8 @@ local tokenizer =   {
    "from sip.data_loading import *",
      "from sip.embed_finetune import *", "from sip.task_finetune import *"],
   "logger": {
-  f:"TqdmLogger"
-    #f: "NeptuneLogger.create",
-    #"project": "namednil-team/testing-official-sip"
+    f: "NeptuneLogger.create",
+    "project": "<NAME>/<PROJECT>"
   },
   "steps": [
 
@@ -24,15 +23,21 @@ local tokenizer =   {
     "f": "finetune_model",
 
     "model": {
-        f: "SIPFinetuningModel.from_pretrained",
-        "pretrained_model_name_or_path": "namednil/sip-d4"
+        f: "load_struct_prefix_with_init",
+        "prefix_length": 50,
+        "num_examples": 32,
+        "random_selection": true,
+        "fst_tokenizer_path": "unicode_char_tokenizer_ipa.json",
+        "tokenizer": tokenizer,
+        "model_str":  "models/YOUR_MODEL",
+       
+       "map_location": "cpu"
     },
 
     "tokenizer": tokenizer,
 
     "train_data_loader": null,
     "validation_data_loader": null,
-    
     
     "dataset_splitter": {
        "f": "RandomSplit",
